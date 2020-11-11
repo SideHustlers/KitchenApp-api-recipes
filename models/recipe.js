@@ -13,11 +13,11 @@ const recipeSchema = new mongoose.Schema({
     required: true,
   },
   prep_time: {
-    type: Number,
+    type: String,
     required: false,
   },
   cook_time: {
-    type: Number,
+    type: String,
     required: false
   },
   difficulty: {
@@ -36,10 +36,10 @@ const recipeSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
-  accessability: {
+  accessibility: {
     type: String,
     required: true,
-    // Need to validate (Enumerated Value)
+    enum: ['PUBLIC', 'PRIVATE']
   },
   type: {
     type: String,
@@ -53,11 +53,6 @@ const recipeSchema = new mongoose.Schema({
   serving_size: {
     type: Number,
     required: false
-  },
-  ingredients: {
-    // ! Look into: https://stackoverflow.com/questions/34230741/adding-json-array-to-a-mongoose-schema-javascript 
-    type: Array,
-    required: true,
   },
   allergies: {
     type: Array,
@@ -76,6 +71,24 @@ const recipeSchema = new mongoose.Schema({
     type: Array,
     required: false
   },
+  ingredients: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'recipeingredients'
+    }
+  ],
+  steps: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'recipesteps'
+    }
+  ],
+  media: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'media'
+    }
+  ],
   created_by: {
     type: String,
     required: true,
@@ -93,4 +106,4 @@ const recipeSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('Recipe', recipeSchema);
+module.exports = mongoose.model('recipes', recipeSchema);

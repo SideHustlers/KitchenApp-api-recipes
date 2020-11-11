@@ -43,4 +43,4 @@ const groceryListSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('GroceryList', groceryListSchema);
+module.exports = mongoose.model('grocerylists', groceryListSchema);

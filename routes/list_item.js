@@ -11,11 +11,11 @@ router.post('/create',
   // authMiddleware.verifyAccessToken,
   async (req, res) => {
     try {
-      let list = await mongoose.model('GroceryList').findOne({
+      let list = await mongoose.model('grocerylists').findOne({
         grocery_list_id: req.params.list_id
       });
 
-      let item = await mongoose.model('ListItem').create({
+      let item = await mongoose.model('listitems').create({
         quantity: req.body.quantity,
         unit: req.body.unit,
         name: req.body.name,

@@ -16,7 +16,7 @@ router.post('/create',
     try {
       let listItems = [];
       await Promise.all(req.body.items.map( async item => {
-        let listItem = await mongoose.model('ListItem').create({
+        let listItem = await mongoose.model('listitems').create({
           quantity: item.quantity,
           unit: item.unit,
           name: item.name,
@@ -28,7 +28,7 @@ router.post('/create',
         listItems.push(listItem);
       }));
 
-      let list = await mongoose.model('GroceryList').create({
+      let list = await mongoose.model('grocerylists').create({
         start_date: null,
         end_date: null,
         items: listItems,
@@ -53,7 +53,7 @@ router.post('/generate',
     try {
       let listItems = [];
       await Promise.all(req.body.items.map( async item => {
-        let listItem = await mongoose.model('ListItem').create({
+        let listItem = await mongoose.model('listitems').create({
           quantity: item.quantity,
           unit: item.unit,
           name: item.name,
@@ -65,11 +65,11 @@ router.post('/generate',
         listItems.push(listItem);
       }));
 
-      let meals = await mongoose.model('Meal').find({
+      let meals = await mongoose.model('meals').find({
         meal_id: {$in: req.body.meals}
       })
 
-      let list = await mongoose.model('GroceryList').create({
+      let list = await mongoose.model('grocerylists').create({
         start_date: null,
         end_date: null,
         items: listItems,

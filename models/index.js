@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const config = require('../config/config.js');
 
-const dbString = config.dialect + '://' + config.username + ':' + config.password + '@' + config.host + '/' + config.database
+const dbString = config.dialect + '://' + config.username + ':' + config.password + '@' + config.host + '/' + config.database;
 mongoose.connect(dbString, {useNewUrlParser: true, 
   useUnifiedTopology: true,
   useCreateIndex: true

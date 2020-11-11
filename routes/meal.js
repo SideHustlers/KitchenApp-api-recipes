@@ -11,11 +11,11 @@ router.post('/create',
   // authMiddleware.verifyAccessToken,
   async (req, res) => {
     try {
-      let recipes = await mongoose.model('Recipe').find({
+      let recipes = await mongoose.model('recipes').find({
         recipe_id: { $in : req.body.recipes}
       });
 
-      const meal = await mongoose.model('Meal').create({
+      const meal = await mongoose.model('meals').create({
         user_id: req.body.user_id,
         date: req.body.date,
         tags: req.body.tags,

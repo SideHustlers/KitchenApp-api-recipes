@@ -46,4 +46,4 @@ const listItemSchema = new mongoose.Schema({
   }
 });
 
-module.exports = mongoose.model('ListItem', listItemSchema);
+module.exports = mongoose.model('listitems', listItemSchema);
