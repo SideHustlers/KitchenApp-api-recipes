@@ -1,9 +1,10 @@
 const mongoose = require('mongoose');
 const {v4: uuid} = require('uuid');
+
 const recipeSchema = new mongoose.Schema({
   recipe_id: {
     type: String,
-    default: uuid(),
+    default: () => uuid(),
     required: true,
     unique: true
   },
@@ -86,10 +87,10 @@ const recipeSchema = new mongoose.Schema({
     // ! Validate it is a UUID
   }
 }, {
-  timestamps: true,
-  createdAt: 'created_at',
-  updatedAt: 'updated_at'
+  timestamps: {
+    createdAt: 'created_at',
+    updatedAt: 'updated_at'
+  }
 });
 
-const Recipe = mongoose.model('Recipe', recipeSchema);
-module.exports = Recipe;
+module.exports = mongoose.model('Recipe', recipeSchema);

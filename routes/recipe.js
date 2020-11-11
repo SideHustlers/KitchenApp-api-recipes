@@ -1,3 +1,4 @@
+'use strict'
 const express = require('express');
 const router = express.Router();
 const bodyValidator = require('express-validation');
@@ -8,7 +9,7 @@ const responseHelper = require('../helpers/responses');
 
 router.post('/create',
   // authMiddleware.verifyAccessToken,
-  async function(req, res) {
+  async (req, res) => {
     try {
       const recipe = await mongoose.model('Recipe').create({
         name: req.body.name,
@@ -34,10 +35,9 @@ router.post('/create',
     }
     catch (error) {
       console.log(error);
-      return responses.returnInternalServerError(req, res, new String(error));
+      return responseHelper.returnInternalServerError(req, res, new String(error));
     }
   }
 );
-
 
 module.exports = router;

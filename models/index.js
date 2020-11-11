@@ -9,8 +9,6 @@ mongoose.connect(dbString, {useNewUrlParser: true,
   useCreateIndex: true
 });
 
-// mongoose.connect('mongodb://localhost/kitchen-api-recipes', {useNewUrlParser: true, useUnifiedTopology: true});
-
 const db = mongoose.connection;
 db.on('error', console.error.bind(console, 'connection error:'));
 db.once('open', function() {
