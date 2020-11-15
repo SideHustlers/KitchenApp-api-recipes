@@ -56,7 +56,7 @@ const recipeSchema = new mongoose.Schema({
   },
   allergies: {
     type: Array,
-    required: true,
+    required: false,
     // ? Need to validate (ENUMS) - Strings
   },
   calories: {

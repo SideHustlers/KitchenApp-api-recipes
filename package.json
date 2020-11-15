@@ -16,6 +16,7 @@
   "author": "Andrew Galloway",
   "license": "ISC",
   "dependencies": {
+    "apollo-server-express": "^2.19.0",
     "aws-sdk": "^2.788.0",
     "body-parser": "^1.19.0",
     "config": "^3.3.2",
@@ -23,12 +24,20 @@
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "express-validation": "^1.0.3",
+    "graphql": "^15.4.0",
+    "graphql-middleware": "^4.0.2",
+    "graphql-redis-subscriptions": "^2.3.1",
+    "graphql-subscriptions": "^1.1.0",
+    "graphql-tools": "^7.0.1",
     "http-status-codes": "^2.1.4",
+    "ioredis": "^4.19.2",
     "joi": "^14.3.1",
     "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.20",
     "mongoose": "^5.10.13",
     "nodemon": "^2.0.6",
     "recipe-ingredient-parser-v2": "^1.1.1",
+    "redis": "^3.0.2",
     "uuid": "^8.3.1"
   },
   "devDependencies": {

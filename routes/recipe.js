@@ -14,6 +14,7 @@ const { generateMediaUrl } = require('../sdks/aws');
 const { captureException } = require('../helpers/logging');
 const recipeSchema = require('../validation/new_recipe');
 const { clean } = require('../helpers/cleaner');
+const pubsub = require('../redis');
 
 async function buildMedia(req) {
   let media = req.body.media;
@@ -120,6 +121,7 @@ router.post('/create',
         ingredients: ingredients,
         steps: steps
       });
+      pubsub.publish('RECIPE', { recipes: { action: 'CREATE', data: recipe }});
       return responseHelper.returnSuccessResponse(req, res, true, recipe);
     }
     catch (error) {
@@ -183,6 +185,7 @@ router.put('/:id',
         recipe_id: req.params.id
       };
       let recipe = await mongoose.model('recipes').updateOne(condition, cleaned, {new: true});
+      pubsub.publish('RECIPE', { recipes: { action: 'UPDATE', data: recipe }});
       return responseHelper.returnSuccessResponse(req, res, true, recipe);
     } catch (error) {
       captureException(error);

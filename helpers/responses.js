@@ -42,7 +42,13 @@ module.exports = {
 
     returnUnacceptableResponse: function (req, res, message) {
         return res.status(HttpStatus.NOT_ACCEPTABLE).json(
-            {"status": "failed", "messsage": message}
+            {"status": "failed", "message": message}
+        )
+    },
+
+    returnUnauthorizedResponse: function(req, res, message) {
+        return res.status(HttpStatus.UNAUTHORIZED).json(
+            {"status": "failed", "message": message}
         )
     },
 
