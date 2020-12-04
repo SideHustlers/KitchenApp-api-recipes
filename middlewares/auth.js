@@ -1,6 +1,7 @@
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const responses = require('../helpers/responses');
+const { ApolloError } = require('apollo-server-express');
 const accessTokenPublicKey = fs.readFileSync('keys/jwtRS512.key.pub');
 
 module.exports = {
@@ -12,11 +13,11 @@ module.exports = {
         if (authHeader.startsWith("Bearer ")){
           token = authHeader.substring(7, authHeader.length);
         } else {
-          return responses.returnForbiddenResponse(req, res, "Invalid token format, must be a Bearer token");
+          return responses.returnUnauthorizedResponse(req, res, "Invalid token format, must be a Bearer token");
         }
         jwt.verify(token, accessTokenPublicKey, async function(err, decoded) {
           if (err) {
-            return responses.returnForbiddenResponse(req, res, err);
+            return responses.returnUnauthorizedResponse(req, res, err);
           } else {
             try {
               req.user = decoded;
@@ -29,12 +30,26 @@ module.exports = {
         });
       } else {
         if (requireAuth) {
-          return responses.returnForbiddenResponse(req, res, "Missing authorization header");
+          return responses.returnUnauthorizedResponse(req, res, "Missing authorization header");
         } else {
           req.user = "anonymous";
           next();
         }
       }
+    }
+  },
+  verifyAccessTokenGraphQL: function(authHeader) {
+    var token;
+    if (authHeader.startsWith("Bearer ")){
+      token = authHeader.substring(7, authHeader.length);
+    } else {
+      throw new ApolloError("Invalid token format, must be a Bearer token", "UNAUTHORIZED", null);
+    }
+    try {
+      let decoded = jwt.verify(token, accessTokenPublicKey);
+      return decoded;
+    } catch (err) {
+      throw new ApolloError(err.message, err.name, null);
     }
   }
 }

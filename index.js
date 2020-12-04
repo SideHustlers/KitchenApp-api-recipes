@@ -1,15 +1,42 @@
 const express = require('express');
+const { ApolloServer } = require('apollo-server-express');
+const { execute, subscribe } = require('graphql');
+const { verifyAccessTokenGraphQL } = require('./middlewares/auth');
+const { SubscriptionServer } = require('subscriptions-transport-ws');
+const { createServer } = require('http');
+
 const app = express();
 const port = 8000;
 const bodyParser = require('body-parser');
 var dotenv = require('dotenv').config();
 const models = require('./models');
 const router = require('./routes');
+const { schema } = require('./graphql/index');
+
 
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.use('/', router);
+
+const apolloServer = new ApolloServer({
+    schema,
+    context: ({req}) => {
+      const token = req.headers.authorization || '';
+      if (token === '') {
+        return { user: "anonymous"}
+      } else {
+        try {
+          let decoded = verifyAccessTokenGraphQL(token);
+          return { user: decoded }
+        } catch (err) {
+          throw err;
+        }
+      }
+    }
+  });
+  
+apolloServer.applyMiddleware({ app, path: '/graphql' });
 
 app.use(function(err, req, res, next){
   console.log(err.name, process.env.NODE_ENV);
@@ -25,6 +52,61 @@ app.use(function(err, req, res, next){
   }
 });
 
-app.listen(port, () => console.log(`App listening on port ${port}!`));
+const server = createServer(app);
+
+server.listen(port, () => {
+  new SubscriptionServer({
+    execute,
+    subscribe,
+    schema,
+    // onConnect: (connectionParams, webSocket, context) => {
+    //   const token = connectionParams.Authorization || connectionParams.authorization || '';
+    //   if (token === '') {
+    //     return { user: "anonymous"}
+    //   } else {
+    //     try {
+    //       let decoded = verifyAccessTokenGraphQL(token);
+    //       return { user: decoded }
+    //     } catch (err) {
+    //       throw err;
+    //     }
+    //   }
+    // },
+    onOperation: configureDecodeTokenSocketMiddleware()
+  }, {
+    server: server,
+    path: '/graphql',
+  });
+  console.log(`App listening on port ${port}!`);
+
+});
+
+function configureDecodeTokenSocketMiddleware() {
+  return async function decodeTokenSocketMiddleware(connectionParams, operationParams) {
+    let user;
+    try {
+      const token = connectionParams.Authorization || connectionParams.authorization || '';
+      console.log('token', token);
+      if (token === '') {
+        authPayload = "anonymous";
+      } else {
+        try {
+          let decoded = verifyAccessTokenGraphQL(token);
+          authPayload = decoded
+        } catch (err) {
+          throw err;
+        }
+      }
+    } catch(e) {
+      throw e;
+    }
+    return {
+      ...operationParams,
+      context: {
+        user: user,
+      },
+    };
+  };
+}
 
 module.exports = app;

@@ -14,6 +14,7 @@ const { generateMediaUrl } = require('../sdks/aws');
 const { captureException } = require('../helpers/logging');
 const recipeSchema = require('../validation/new_recipe');
 const { clean } = require('../helpers/cleaner');
+const pubsub = require('../redis');
 
 async function buildMedia(req) {
   let media = req.body.media;
@@ -29,6 +30,29 @@ async function buildMedia(req) {
     })
   );
 };
+
+async function buildNutrition(req) {
+  let nutrition = req.body.nutrition;
+  if (nutrition) {
+    return mongoose.model('recipenutritions').create({
+      nutrition_id: uuid(),
+      calories: nutrition.calories,
+      total_fat: nutrition.total_fat,
+      trans_fat: nutrition.trans_fat,
+      saturated_fat: nutrition.saturated_fat,
+      cholesterol: nutrition.cholesterol,
+      sodium: nutrition.sodium,
+      total_carbohydrates: nutrition.total_carbohydrates,
+      fiber: nutrition.fiber,
+      sugar: nutrition.sugar,
+      protein: nutrition.protein,
+      vitamins: nutrition.vitamins,
+      created_by: req.user.user_id,
+      updated_by: req.user.user_id
+    });
+  }
+  return null; 
+}
 
 async function buildIngredients(req) {
   let ingredients = req.body.ingredients;
@@ -97,9 +121,11 @@ router.post('/create',
       const media = await buildMedia(req);
       const ingredients = await buildIngredients(req);
       const steps = await buildSteps(req);
+      const nutrition = await buildNutrition(req);
       const recipe = await mongoose.model('recipes').create({
         recipe_id: uuid(),
         name: req.body.name,
+        description: req.body.description,
         prep_time: req.body.prep_time,
         cook_time: req.body.cook_time,
         difficulty: req.body.difficulty,
@@ -111,7 +137,7 @@ router.post('/create',
         source: req.body.source,
         serving_size: req.body.serving_size,
         allergies: req.body.allergies,
-        calories: req.body.calories,
+        nutrition: nutrition,
         tags: req.body.tags,
         preferences: req.body.preferences,
         created_by: req.user.user_id,
@@ -120,6 +146,7 @@ router.post('/create',
         ingredients: ingredients,
         steps: steps
       });
+      pubsub.publish('RECIPE', { recipes: { action: 'CREATE', data: recipe }});
       return responseHelper.returnSuccessResponse(req, res, true, recipe);
     }
     catch (error) {
@@ -158,6 +185,7 @@ router.put('/:id',
       const steps = await buildSteps(req);
       let recipeUpdate = {
         name: req.body.name,
+        description: req.body.description,
         prep_time: req.body.prep_time,
         cook_time: req.body.cook_time,
         difficulty: req.body.difficulty,
@@ -182,7 +210,11 @@ router.put('/:id',
       let condition = {
         recipe_id: req.params.id
       };
-      let recipe = await mongoose.model('recipes').updateOne(condition, cleaned, {new: true});
+      let recipe = await mongoose.model('recipes').findOneAndUpdate(condition, {$set: cleaned}, {"new": true})
+      .populate('media')
+      .populate('ingredients')
+      .populate('steps').exec();
+      pubsub.publish('RECIPE', { recipes: { action: 'UPDATE', data: recipe }});
       return responseHelper.returnSuccessResponse(req, res, true, recipe);
     } catch (error) {
       captureException(error);
