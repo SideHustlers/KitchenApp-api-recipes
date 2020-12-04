@@ -12,6 +12,11 @@ const recipeSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  description: {
+    type: String,
+    required: false,
+    default: "",
+  },
   prep_time: {
     type: String,
     required: false,
@@ -59,9 +64,10 @@ const recipeSchema = new mongoose.Schema({
     required: false,
     // ? Need to validate (ENUMS) - Strings
   },
-  calories: {
-    type: Number,
-    required: false
+  recipe_nutrition: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'recipenutritions',
+    required: false,
   },
   tags: {
     type: Array,

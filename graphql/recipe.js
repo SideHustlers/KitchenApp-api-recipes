@@ -46,9 +46,32 @@ const typeDefs = `
     created_at: String,
     updated_at: String
   }
+  type Vitamin {
+    name: String,
+    value: String
+  }
+  type Nutrition {
+    nutrition_id: String!,
+    calories: Int,
+    total_fat: String,
+    trans_fat: String,
+    saturated_fat: String,
+    cholesterol: String,
+    sodium: String,
+    total_carbohydrates: String,
+    fiber: String,
+    sugar: String,
+    protein: String,
+    vitamins: [Vitamin],
+    created_by: String,
+    updated_by: String,
+    created_at: String,
+    updated_at: String
+  }
   type Recipe {
     recipe_id: String!,
     name: String!,
+    description: String,
     prep_time: String,
     cook_time: String,
     difficulty: Int,
@@ -60,10 +83,10 @@ const typeDefs = `
     source: String,
     serving_size: String,
     allergies: [String],
-    calories: Int,
     tags: [String],
     preferences: [String],
     ingredients: [Ingredient],
+    nutrition: Nutrition,
     media: [Media],
     created_by: String,
     updated_by: String,
