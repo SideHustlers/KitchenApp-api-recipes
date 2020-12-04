@@ -8,6 +8,10 @@ const listItemSchema = new mongoose.Schema({
     required: true,
     unique: true,
   },
+  recipe_ingredient_ids: [{
+    type: String,
+    required: false
+  }],
   quantity: {
     type: Number,
     required: false,
@@ -24,6 +28,10 @@ const listItemSchema = new mongoose.Schema({
     type: Boolean,
     required: true,
     default: false
+  },
+  type: {
+    type: String,
+    required: true,
   },
   note: {
     type: String,

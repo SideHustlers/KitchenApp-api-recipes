@@ -6,7 +6,8 @@ const config = require('../config/config.js');
 const dbString = config.dialect + '://' + config.username + ':' + config.password + '@' + config.host + '/' + config.database;
 mongoose.connect(dbString, {useNewUrlParser: true, 
   useUnifiedTopology: true,
-  useCreateIndex: true
+  useCreateIndex: true,
+  useFindAndModify: false,
 });
 
 const db = mongoose.connection;

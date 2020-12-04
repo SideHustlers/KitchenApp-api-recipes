@@ -38,7 +38,7 @@ const mealSchema = new mongoose.Schema({
   },
   recipes: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'Recipe',
+    ref: 'recipes',
     required: false,
   }],
   created_by: {

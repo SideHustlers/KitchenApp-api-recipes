@@ -16,14 +16,18 @@ const groceryListSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
+  type: {
+    type: String,
+    required: true,
+  },
   items: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'ListItem',
+    ref: 'listitems',
     required: true,
   }],
   meals: [{
     type: mongoose.Schema.ObjectId,
-    ref: 'Meal',
+    ref: 'meals',
     required: false,
   }],
   created_by: {
