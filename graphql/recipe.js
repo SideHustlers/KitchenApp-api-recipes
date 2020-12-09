@@ -120,7 +120,6 @@ const resolvers = {
           .populate('media')
           .populate('steps')
           .populate('nutrition');
-          console.log('recipes', recipes[0]);
           return recipes;
         } else {
           let recipes = await mongoose.model('recipes').find({
