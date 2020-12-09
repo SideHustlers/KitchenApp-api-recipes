@@ -21,7 +21,10 @@ const typeDefs = `
     action: String!,
     data: Recipe!
   }
-  type Query { recipes: [Recipe] }
+  extend type Query { 
+    recipes: [Recipe] 
+    recipe(id: String!): Recipe
+  }
   type Media {
     medium_id: String!,
     priority: Int,
@@ -36,11 +39,21 @@ const typeDefs = `
     ingredient_id: String!,
     name: String!,
     type: String,
-    quantity: Int,
+    quantity: Float,
     unit: String,
     raw: String,
     rating: String,
     media: [Media],
+    created_by: String,
+    updated_by: String,
+    created_at: String,
+    updated_at: String
+  }
+  type Step {
+    step_id: String!,
+    step_number: Int,
+    time: String,
+    description: String!,
     created_by: String,
     updated_by: String,
     created_at: String,
@@ -88,6 +101,7 @@ const typeDefs = `
     ingredients: [Ingredient],
     nutrition: Nutrition,
     media: [Media],
+    steps: [Step]
     created_by: String,
     updated_by: String,
     created_at: String,
@@ -102,7 +116,10 @@ const resolvers = {
         if (context.user === 'anonymous') {
           let recipes = await mongoose.model('recipes').find({
             accessibility: "PUBLIC"
-          }).exec();
+          }).populate('ingredients')
+          .populate('media')
+          .populate('steps')
+          .populate('nutrition');
           return recipes;
         } else {
           let recipes = await mongoose.model('recipes').find({
@@ -119,14 +136,56 @@ const resolvers = {
                 ]
               }
             ]
-          }).exec();
+          }).populate('ingredients')
+          .populate('media')
+          .populate('steps')
+          .populate('nutrition');
           return recipes;
         }
       } catch (err) {
         console.log(err);
         throw new ApolloError("Something went wrong, please try again", "BAD REQUEST");
       }
-    }
+    },
+    recipe: async (parent, args, context, info) => {
+      try {
+        if (context.user === 'anonymous') {
+          let recipe = await mongoose.model('recipes').findOne({
+            recipe_id: args.id,
+            accessibility: "PUBLIC"
+          }).populate('ingredients')
+          .populate('media')
+          .populate('steps')
+          .populate('nutrition');
+          return recipe;
+        } else {
+          let recipe = await mongoose.model('recipes').findOne({
+            recipe_id: args.id,
+            $or: [
+              {
+                accessibility: "PUBLIC"
+              },
+              {
+                $and: [
+                  {
+                    accessibility: "PRIVATE",
+                    created_by: context.user.user_id
+                  }
+                ]
+              }
+
+            ]
+          }).populate('ingredients')
+          .populate('media')
+          .populate('steps')
+          .populate('nutrition');
+          return recipe;
+        }
+      } catch (err) {
+        console.log(err);
+        throw new ApolloError("Something went wrong, please try again", "BAD REQUEST");
+      }
+    },
   },
   Subscription: {
     recipes:  {
@@ -145,13 +204,10 @@ const resolvers = {
   }
 };
 
-const schema = makeExecutableSchema({ typeDefs, resolvers });
-
-const schemaWithMiddleware = applyMiddleware(
-  schema,
-  recipeMiddleware,
-);
+// const schema = makeExecutableSchema({ typeDefs, resolvers });
 
 module.exports = {
-  schema: schema
+  typeDefs: typeDefs,
+  resolvers: resolvers,
+  middleware: recipeMiddleware
 };

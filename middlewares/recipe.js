@@ -33,6 +33,7 @@ module.exports = {
       })
       .populate('media')
       .populate('ingredients')
+      .populate('nutrition')
       .populate('steps');
       if (recipe) {
         if (recipe.accessibility === 'PUBLIC') {
