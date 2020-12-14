@@ -67,12 +67,13 @@ const resolvers = {
           let lists = await mongoose.model('grocerylists').find({
             created_by: context.user.user_id
           }).populate({
-            path: 'items',
+            path: 'items'
+          }).populate({
             path: 'meals',
             populate: {
               path: 'recipes'
             }
-          }).exec();
+          });
           return lists;
         }
       } catch (err) {

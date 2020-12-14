@@ -5,6 +5,7 @@ module.exports = {
     name: Joi.string().required(),
     description: Joi.string().allow(null).allow(''),
     prep_time: Joi.string().allow(null).allow(''),
+    cuisine: Joi.string().allow(null).allow(''),
     cook_time: Joi.string().allow(null).allow(''),
     difficulty: Joi.number().allow(null).allow(''),
     rating: Joi.number().min(0).max(5).allow(null).allow(''),

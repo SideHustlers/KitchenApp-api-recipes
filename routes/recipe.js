@@ -125,6 +125,7 @@ router.post('/create',
       const recipe = await mongoose.model('recipes').create({
         recipe_id: uuid(),
         name: req.body.name,
+        cuisine: req.body.cuisine,
         description: req.body.description,
         prep_time: req.body.prep_time,
         cook_time: req.body.cook_time,
