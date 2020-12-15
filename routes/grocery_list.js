@@ -4,6 +4,7 @@ const router = express.Router();
 const bodyValidator = require('express-validation');
 const mongoose = require('mongoose');
 const convert = require('convert-units');
+const { DateTime } = require('luxon');
 const authMiddleware = require('../middlewares/auth');
 const groceryListMiddleware = require('../middlewares/grocery_list');
 const responseHelper = require('../helpers/responses');
@@ -17,8 +18,7 @@ const create_grocery_list = require('../validation/create_grocery_list');
 const update_grocery_list = require('../validation/update_grocery_list');
 const units = require('../helpers/units');
 
-// TODO: Conversion Table for Units
-// TODO: Combine ingredients
+
 async function aggregateMealsAndIngredients(req) {
   let meals = await mongoose.model('meals').find(
     {
@@ -68,7 +68,6 @@ async function aggregateMealsAndIngredients(req) {
   return {list_items: listItems, meals: meals};
 };
 
-// TODO: Test this to validate consolidation algorithm
 async function consolidateIngredients(user_id, ingredients) {
   let items  = [];
   let itemNames = [];
@@ -79,7 +78,7 @@ async function consolidateIngredients(user_id, ingredients) {
       let ingB = ingredients[j];
       let item = null;
       let itemName = null;
-      if (ingA != ingB) {
+      if (ingA != ingB  && !itemNames.includes(ingB.name)) {
         if (ingA.name == ingB.name) {
           if (ingA.unit == ingB.unit) {
             item = combineIngredients(user_id, ingA, ingB);
@@ -131,12 +130,9 @@ async function consolidateIngredients(user_id, ingredients) {
 
 function combineIngredients(user_id, a, b) {
   let ids = [];
-  a.recipe_ingredient_ids.map(id => {
-    ids.push(id);
-  });
-  b.recipe_ingredient_ids.map(id => {
-    ids.push(id);
-  });
+  ids.push(...a.recipe_ingredient_ids);
+  ids.push(...b.recipe_ingredient_ids);
+
   return {
     recipe_ingredient_ids: ids,
     quantity: a.quantity + b.quantity,
@@ -146,8 +142,8 @@ function combineIngredients(user_id, a, b) {
     note: a.note + '\n\n' + b.note,
     created_by: user_id,
     updated_by: user_id,
-  }
-}
+  };
+};
 
 
 router.post('/create',
@@ -171,6 +167,7 @@ router.post('/create',
       }));
 
       let list = await mongoose.model('grocerylists').create({
+        name: req.body.name,
         start_date: null,
         end_date: null,
         type: 'custom',
@@ -188,11 +185,13 @@ router.post('/create',
   }
 );
 
+// TODO: Update to utilize GroceryListController
 router.post('/generate',
   authMiddleware.verifyAccessToken(true),
   async (req, res) => {
     try {
       // TODO: Validate start-date and end_date
+      let name = DateTime.fromISO(req.body.start_date).toFormat('MMM dd') + ' - ' + DateTime.fromISO(req.body.end_date).toFormat('MMM dd');
       let aggregate = await aggregateMealsAndIngredients(req);
 
       let listItems = await consolidateIngredients(req.user.user_id, aggregate.list_items);
@@ -204,6 +203,7 @@ router.post('/generate',
       }));
 
       let list = await mongoose.model('grocerylists').create({
+        name: name,
         start_date: req.body.start_date,
         end_date: req.body.end_date,
         type: 'generated',
@@ -234,6 +234,8 @@ router.put('/:list_id/update',
     try {
 
       // TODO: Validate start_date & end_date
+      let name = DateTime.fromISO(req.body.start_date).toFormat('MMM dd') + ' - ' + DateTime.fromISO(req.body.end_date).toFormat('MMM dd');
+
       let aggregate = await aggregateMealsAndIngredients(req);
 
       let listItems = await consolidateIngredients(req.user.user_id, aggregate.list_items);
@@ -266,7 +268,8 @@ router.put('/:list_id/update',
 
       list = await mongoose.model('grocerylists').findOneAndUpdate(
         {grocery_list_id: req.params.list_id},
-        {$set: { start_date: req.body.start_date,
+        {$set: { name: name,
+          start_date: req.body.start_date,
           end_date: req.body.end_date,
           type: 'generated',
           items: items,

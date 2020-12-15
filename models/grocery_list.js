@@ -8,6 +8,10 @@ const groceryListSchema = new mongoose.Schema({
     required: true,
     unique: true
   },
+  name: {
+    type: String,
+    required: true,
+  },
   start_date: {
     type: Date,
     required: false,
