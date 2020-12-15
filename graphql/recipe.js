@@ -13,7 +13,7 @@ const recipeMiddleware = {
       return resp;
     },
   },
-}
+};
 
 const typeDefs = `
   type Subscription { recipes: SubscribeData! }
@@ -32,8 +32,8 @@ const typeDefs = `
     type: String!,
     created_by: String,
     updated_by: String,
-    created_at: String,
-    updated_at: String
+    created_at: Date,
+    updated_at: Date
   }
   type Ingredient {
     ingredient_id: String!,
@@ -46,8 +46,8 @@ const typeDefs = `
     media: [Media],
     created_by: String,
     updated_by: String,
-    created_at: String,
-    updated_at: String
+    created_at: Date,
+    updated_at: Date
   }
   type Step {
     step_id: String!,
@@ -56,8 +56,8 @@ const typeDefs = `
     description: String!,
     created_by: String,
     updated_by: String,
-    created_at: String,
-    updated_at: String
+    created_at: Date,
+    updated_at: Date
   }
   type Vitamin {
     name: String,
@@ -78,8 +78,8 @@ const typeDefs = `
     vitamins: [Vitamin],
     created_by: String,
     updated_by: String,
-    created_at: String,
-    updated_at: String
+    created_at: Date,
+    updated_at: Date
   }
   type Recipe {
     recipe_id: String!,
@@ -104,8 +104,8 @@ const typeDefs = `
     steps: [Step]
     created_by: String,
     updated_by: String,
-    created_at: String,
-    updated_at: String
+    created_at: Date,
+    updated_at: Date
   }
 `;
 

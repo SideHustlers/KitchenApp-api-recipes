@@ -10,50 +10,24 @@ const groceryListMiddleware = {
       return resp;
     },
   },
-}
+};
 
 const typeDefs = `
-    extend type Query { grocery_lists: [GroceryList] }
-    type Meal {
-      meal_id: String!,
-      user_id: String!,
-      date: String,
-      tags: [String],
-      name: String,
-      total_calories: Float,
-      total_time: Float,
-      total_time_units: String,
-      recipes: [Recipe],
-      created_by: String!,
-      updated_by: String!,
-      created_at: String!,
-      updated_at: String!
-    }
-    type ListItem {
-      list_item_id: String!,
-      recipe_ingredient_ids: [String],
-      quantity: Float,
-      unit: String,
-      name: String,
-      is_fulfilled: Boolean,
-      type: String!,
-      note: String,
-      created_by: String!,
-      updated_by: String!,
-      created_at: String!,
-      updated_at: String!
+    extend type Query { 
+      grocery_lists: [GroceryList]
     }
     type GroceryList {
       grocery_list_id: String!,
-      start_date: String,
-      end_date: String,
+      name: String!,
+      start_date: Date,
+      end_date: Date,
       type: String!,
       items: [ListItem],
       meals: [Meal],
       created_by: String!,
       updated_by: String!,
-      created_at: String!,
-      updated_at: String!
+      created_at: Date!,
+      updated_at: Date!
     }
 `;
 
@@ -66,8 +40,7 @@ const resolvers = {
         } else {
           let lists = await mongoose.model('grocerylists').find({
             created_by: context.user.user_id
-          }).populate({
-            path: 'items',
+          }).populate('items').populate({
             path: 'meals',
             populate: {
               path: 'recipes'
@@ -79,7 +52,7 @@ const resolvers = {
         console.log(err);
         throw new ApolloError("Something went wrong, please try again", "BAD REQUEST");
       }
-    }
+    },
   }
 };
 

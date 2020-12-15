@@ -69,4 +69,31 @@ router.put('/:id/update',
   }
 );
 
+router.put('/:id/toggle',
+  authMiddleware.verifyAccessToken(true),
+  listItemMiddleware.checkListItemExists,
+  listItemMiddleware.checkListItemOwnership,
+  async (req, res) => {
+    try {
+      let listItem = req.list_item;
+
+      let isFulfilled = undefined;
+
+      if (req.list_item.is_fulfilled) {
+        isFulfilled = false;
+      } else {
+        isFulfilled = true;
+      }
+
+      listItem = await mongoose.model('listitems').findOneAndUpdate({list_item_id: req.params.id},
+        {$set: {is_fulfilled: isFulfilled}}, {new: true});
+
+      return responseHelper.returnSuccessResponse(req, res, true, listItem);
+    } catch (error) {
+      captureException(error);
+      return responseHelper.returnInternalServerError(req, res, new String(error));
+    }
+  }
+);
+
 module.exports = router
