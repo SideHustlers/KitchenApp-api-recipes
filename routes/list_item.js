@@ -59,7 +59,7 @@ router.put('/:id/update',
       };
 
       let cleaned = clean(itemUpdate);
-      let item = await mongoose.model('listitems').updateOne({list_item_id: req.params.id}, cleaned, {new: true});
+      let item = await mongoose.model('listitems').findOneAndUpdate({list_item_id: req.params.id}, cleaned, {new: true});
 
       return responseHelper.returnSuccessResponse(req, res, true, item);
     } catch (error) {
