@@ -20,7 +20,11 @@ module.exports = {
             return responses.returnUnauthorizedResponse(req, res, err);
           } else {
             try {
-              req.user = decoded;
+              if (decoded.type === 'client') {
+                req.user = "anonymous";
+              } else {
+                req.user = decoded;
+              }
               next();
             } catch (err) {
               console.log(err);
@@ -29,12 +33,7 @@ module.exports = {
           }
         });
       } else {
-        if (requireAuth) {
-          return responses.returnUnauthorizedResponse(req, res, "Missing authorization header");
-        } else {
-          req.user = "anonymous";
-          next();
-        }
+        return responses.returnUnauthorizedResponse(req, res, "Missing authorization header");
       }
     }
   },
@@ -47,6 +46,9 @@ module.exports = {
     }
     try {
       let decoded = jwt.verify(token, accessTokenPublicKey);
+      if (decoded.type === 'client') {
+        decoded = 'anonymous';
+      }
       return decoded;
     } catch (err) {
       throw new ApolloError(err.message, err.name, null);
