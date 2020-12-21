@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 const authMiddleware = require('../middlewares/auth');
 const mealMiddleware = require('../middlewares/meal');
 const responseHelper = require('../helpers/responses');
+const mealController = require('../controllers/meal');
 const groceryListController = require('../controllers/grocery_list');
 const { clean } = require('../helpers/cleaner');
 const { captureException } = require('../helpers/logging');
@@ -23,14 +24,16 @@ router.post('/create',
         recipe_id: { $in : req.body.recipes}
       });
 
+      let valueAggregate = await mealController.calculateMealValues(req.body.recipes);
+
       const meal = await mongoose.model('meals').create({
         user_id: req.user.user_id,
         date: req.body.date,
-        tags: req.body.tags,
+        tags: valueAggregate.tags,
         name: req.body.name,
-        total_calories: req.body.total_calories,
-        total_time: req.body.total_time,
-        total_time_units: req.body.total_time_units,
+        total_calories: valueAggregate.total_calories,
+        total_time: valueAggregate.total_time,
+        total_time_units: valueAggregate.total_time_units,
         recipes: recipes,
         created_by: req.user.user_id,
         updated_by: req.user.user_id
@@ -54,14 +57,23 @@ router.put('/:id/edit',
     try {
       let meal = req.meal;
 
+      let recipes = await mongoose.model('recipes').find({_id: {$in: meal.recipes}});
+
+      let recipeIds = [];
+      recipes.map(recipe => {
+        recipeIds.push(recipe.recipe_id);
+      });
+
+      let valueAggregate = await mealController.calculateMealValues(recipeIds);
+
       let mealUpdate = {
         user_id: meal.user_id,
         date: meal.date,
-        tags: req.body.tags,
+        tags: valueAggregate.tags,
         name: req.body.name,
-        total_calories: req.body.total_calories,
-        total_time: req.body.total_time,
-        total_time_units: req.body.total_time_units,
+        total_calories: valueAggregate.total_calories,
+        total_time: valueAggregate.total_time,
+        total_time_units: valueAggregate.total_time_units,
         recipes: meal.recipes,
         updated_by: req.user.user_id
       };

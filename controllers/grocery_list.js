@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 const convert = require('convert-units');
 const unitsHelper = require('../helpers/units');
+const { DateTime } = require('luxon');
 
 function combineListItems(a, b, userId) {
   let ids = [];
@@ -59,6 +60,48 @@ module.exports = {
       });
     });
   
+    return {meals: meals, list_items: listItems};
+  },
+
+  aggregateGroceryListItemsByDate: async (startDate, endDate, userId) => {
+    let meals = await mongoose.model('meals').find(
+      { user_id: userId,
+        date: { $gte: startDate, $lte: endDate  }
+      }).populate({
+        path: 'recipes',
+        populate: {
+          path: 'ingredients'
+        }
+      });
+    
+    let listIngredients = [];
+    await Promise.all(meals.map( async meal => {
+      await Promise.all(meal.recipes.map( async recipe => {
+        await Promise.all(recipe.ingredients.map(ingredient => {
+          listIngredients.push({
+            recipe_ingredient_id: ingredient.ingredient_id,
+            quantity: ingredient.quantity,
+            unit: ingredient.unit,
+            name: ingredient.name,
+            note: ingredient.raw
+          });
+        }));
+      }));
+    }));
+
+    let listItems = [];
+    listIngredients.map(ingredient => {
+      listItems.push({
+        recipe_ingredient_ids: [ ingredient.recipe_ingredient_id ],
+        quantity: ingredient.quantity,
+        unit: ingredient.unit,
+        type: 'generated',
+        note: ingredient.note,
+        created_by: userId,
+        updated_by: userId
+      });
+    });
+
     return {meals: meals, list_items: listItems};
   },
   
@@ -156,5 +199,12 @@ module.exports = {
   
     console.log("cust_items", customItems.length);
     return customItems;
+  },
+
+  generateGroceryListName: (startDate, endDate) => {
+    let start = DateTime.fromJSDate(startDate).plus({days: 1}).toFormat('MMM dd');
+    let end = DateTime.fromJSDate(endDate).plus({days: 1}).toFormat('MMM dd');
+    let name = start + ' - ' + end;
+    return name
   }
 }

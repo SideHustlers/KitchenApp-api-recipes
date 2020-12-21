@@ -68,7 +68,7 @@ const recipeSchema = new mongoose.Schema({
     required: false,
     // ? Need to validate (ENUMS) - Strings
   },
-  recipe_nutrition: {
+  nutrition: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'recipenutritions',
     required: false,
