@@ -40,12 +40,14 @@ const resolvers = {
         } else {
           let lists = await mongoose.model('grocerylists').find({
             created_by: context.user.user_id
-          }).populate('items').populate({
+          }).populate({
+            path: 'items'
+          }).populate({
             path: 'meals',
             populate: {
               path: 'recipes'
             }
-          }).exec();
+          });
           return lists;
         }
       } catch (err) {

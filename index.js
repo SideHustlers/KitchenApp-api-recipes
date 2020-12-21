@@ -1,5 +1,5 @@
 const express = require('express');
-const { ApolloServer } = require('apollo-server-express');
+const { ApolloServer, AuthenticationError } = require('apollo-server-express');
 const { execute, subscribe } = require('graphql');
 const { verifyAccessTokenGraphQL } = require('./middlewares/auth');
 const { SubscriptionServer } = require('subscriptions-transport-ws');
@@ -24,7 +24,7 @@ const apolloServer = new ApolloServer({
     context: ({req}) => {
       const token = req.headers.authorization || '';
       if (token === '') {
-        return { user: "anonymous"}
+        throw new AuthenticationError("Missing authorization header");
       } else {
         try {
           let decoded = verifyAccessTokenGraphQL(token);
@@ -86,13 +86,12 @@ function configureDecodeTokenSocketMiddleware() {
     let user;
     try {
       const token = connectionParams.Authorization || connectionParams.authorization || '';
-      console.log('token', token);
       if (token === '') {
-        authPayload = "anonymous";
+        throw new AuthenticationError("Missing authorization header")
       } else {
         try {
           let decoded = verifyAccessTokenGraphQL(token);
-          authPayload = decoded
+          user = decoded
         } catch (err) {
           throw err;
         }
