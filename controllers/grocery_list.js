@@ -93,6 +93,7 @@ module.exports = {
     listIngredients.map(ingredient => {
       listItems.push({
         recipe_ingredient_ids: [ ingredient.recipe_ingredient_id ],
+        name: ingredient.name,
         quantity: ingredient.quantity,
         unit: ingredient.unit,
         type: 'generated',
@@ -113,7 +114,6 @@ module.exports = {
       listItems.map(itemB => {
         let item = null;
         let itemName = null;
-  
         if (itemA != itemB && !itemNames.includes(itemB.name)) {
           if (itemA.name === itemB.name) {
             if (itemA.unit === itemB.unit) {
