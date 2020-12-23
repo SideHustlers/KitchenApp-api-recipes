@@ -2,9 +2,9 @@ const Joi = require('joi');
 
 module.exports = {
   body: {
-    quantity: Joi.number(),
-    unit: Joi.string(),
-    name: Joi.string(),
+    quantity: Joi.number().required(),
+    unit: Joi.string().required(),
+    name: Joi.string().required(),
     note: Joi.string()
   }
 }
