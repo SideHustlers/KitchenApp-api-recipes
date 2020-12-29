@@ -179,5 +179,25 @@ router.put('/:list_id/edit',
   }
 );
 
+// TODO: TEST & FIX
+router.delete('/:list_id/delete',
+  authMiddleware.verifyAccessToken(true),
+  groceryListMiddleware.checkGroceryListExists,
+  groceryListMiddleware.checkGroceryListOwnership,
+  async (req, res) => {
+    try {
+      let list = req.grocery_list;
+
+      await mongoose.model('listitems').deleteMany({_id: {$in: list.items}});
+      await mongoose.model('grocerylists').deleteOne({grocery_list_id: req.params.list_id});
+
+      return responseHelper.returnSuccessResponse(req, res, false, {});
+    } catch (error) {
+      captureException(error);
+      return responseHelper.returnInternalServerError(req, res, new String(error));
+    }
+  }
+);
+
 
 module.exports = router;

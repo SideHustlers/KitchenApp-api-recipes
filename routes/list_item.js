@@ -96,4 +96,28 @@ router.put('/:id/toggle',
   }
 );
 
+router.delete('/:id/delete',
+  authMiddleware.verifyAccessToken(true),
+  listItemMiddleware.checkListItemExists,
+  listItemMiddleware.checkListItemOwnership,
+  async (req, res) => {
+    try {
+
+      await mongoose.model('listitems').deleteOne({ list_item_id: req.params.id });
+
+      let list = await mongoose.model('grocerylists').findOne({ grocery_list_id: req.params.list_id });
+      let remainingItems = await mongoose.model('listitems').find({_id: {$in: list.items}});
+
+      list = await mongoose.model('grocerylists').findOneAndUpdate({ grocery_list_id: list.grocery_list_id}, 
+        {items: remainingItems}, {new: true});
+
+      return responseHelper.returnSuccessResponse(req, res, false, {});
+
+    } catch (error) {
+      captureException(error);
+      return responseHelper.returnInternalServerError(req, res, new String(error));
+    }
+  }
+)
+
 module.exports = router

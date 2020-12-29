@@ -8,9 +8,7 @@ module.exports = {
       name: Joi.string(),
       is_fulfilled: Joi.boolean(),
       note: Joi.string().allow(null),
-    })),
-    meals: Joi.array().items(Joi.string()),
-    start_date: Joi.string(),
-    end_date: Joi.string()
+    })).required(),
+    name: Joi.string().default('New List')
   }
 }
