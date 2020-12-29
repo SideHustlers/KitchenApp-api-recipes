@@ -14,7 +14,6 @@ const { captureException } = require('../helpers/logging');
 const create_meal = require('../validation/create_meal');
 
 
-// TODO: Calculate calories and time, determine time units
 router.post('/create', 
   authMiddleware.verifyAccessToken(true),
   bodyValidator(create_meal),
@@ -186,6 +185,50 @@ router.put('/:id/move',
       }
 
       return responseHelper.returnSuccessResponse(req, res, true, {list: list, meal: meal});
+
+    } catch (error) {
+      captureException(error);
+      return responseHelper.returnInternalServerError(req, res, new String(error));
+    }
+  }
+);
+
+// TODO: Decide on delete logic for a meal
+router.delete('/:id/delete',
+  authMiddleware.verifyAccessToken(true),
+  mealMiddleware.checkMealExists,
+  mealMiddleware.checkMealOwnership,
+  async (req, res) => {
+    try {
+      let list = await groceryListController.findAndRemoveMealFromGroceryList(req.meal);
+      if (list != null) {
+        let aggregate = await groceryListController.aggregateGroceryListItems(list, req.user.user_id);
+        let listItems = groceryListController.consolidateListItems(aggregate.list_items, req.user.user_id);
+        await groceryListController.deleteGeneratedListItems(list.meals);
+        let customItems = await groceryListController.fetchCustomListItems(list, req.user.user_id);
+
+        let items = [];
+        await Promise.all(listItems.map(async listItem => {
+          items.push(await mongoose.model('listitems').create(listItem));
+        }));
+
+        if (customItems.length > 0) {
+          items.push(...customItems);
+        }
+
+        list = await mongoose.model('grocerylists').findOneAndUpdate(
+          {grocery_list_id: list.grocery_list_id},
+          {$set: { type: 'generated',
+            items: items,
+            meals: aggregate.meals,
+            updated_by: req.user.user_id
+          }},
+          {new: true}
+        );
+      }
+
+      await mongoose.model('meals').deleteOne({meal_id: req.params.id});
+      return responseHelper.returnSuccessResponse(req, res, false, {});
 
     } catch (error) {
       captureException(error);
