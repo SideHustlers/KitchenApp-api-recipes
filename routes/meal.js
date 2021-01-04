@@ -145,8 +145,6 @@ router.put('/:id/move',
       ).populate('items');
 
       if (groceryLists.length > 0) {
-        console.log('Lists', groceryLists.length);
-        console.log('Items', groceryLists[0].items.length);
   
         await Promise.all(groceryLists.map(async gList => {
           let listMeals = gList.meals;
@@ -160,8 +158,8 @@ router.put('/:id/move',
           );
           let listAggregate = await groceryListController.aggregateGroceryListItems(groceryList, req.user.user_id);
           let groceryListItems = groceryListController.consolidateListItems(listAggregate.list_items, req.user.user_id);
-          await deleteGeneratedListItems(groceryList, req.user.user_id);
-          let groceryCustomItems = await fetchCustomListItems(groceryList, req.user.user_id);
+          await groceryListController.deleteGeneratedListItems(groceryList, req.user.user_id);
+          let groceryCustomItems = await groceryListController.fetchCustomListItems(groceryList, req.user.user_id);
   
           let groceryItems = [];
           await Promise.all(groceryListItems.map(async gListItem => {
@@ -193,7 +191,6 @@ router.put('/:id/move',
   }
 );
 
-// TODO: Decide on delete logic for a meal
 router.delete('/:id/delete',
   authMiddleware.verifyAccessToken(true),
   mealMiddleware.checkMealExists,
