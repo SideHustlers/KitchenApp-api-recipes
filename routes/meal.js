@@ -110,7 +110,7 @@ router.put('/:id/move',
       let list = await groceryListController.findAndRemoveMealFromGroceryList(meal);
       if (list != null) {
         let aggregate = await groceryListController.aggregateGroceryListItems(list, req.user.user_id);
-        let listItems = groceryListController.consolidateListItems(aggregate.list_items, req.user.user_id);
+        let listItems = groceryListController.consolidateListItems(aggregate.meals, aggregate.list_items, req.user.user_id);
         await groceryListController.deleteGeneratedListItems(list.meals);
         let customItems = await groceryListController.fetchCustomListItems(list, req.user.userId);
         
@@ -157,7 +157,7 @@ router.put('/:id/move',
             {new: true}
           );
           let listAggregate = await groceryListController.aggregateGroceryListItems(groceryList, req.user.user_id);
-          let groceryListItems = groceryListController.consolidateListItems(listAggregate.list_items, req.user.user_id);
+          let groceryListItems = groceryListController.consolidateListItems(aggregate.meals, listAggregate.list_items, req.user.user_id);
           await groceryListController.deleteGeneratedListItems(groceryList, req.user.user_id);
           let groceryCustomItems = await groceryListController.fetchCustomListItems(groceryList, req.user.user_id);
   
@@ -200,7 +200,7 @@ router.delete('/:id/delete',
       let list = await groceryListController.findAndRemoveMealFromGroceryList(req.meal);
       if (list != null) {
         let aggregate = await groceryListController.aggregateGroceryListItems(list, req.user.user_id);
-        let listItems = groceryListController.consolidateListItems(aggregate.list_items, req.user.user_id);
+        let listItems = groceryListController.consolidateListItems(aggregate.meals, aggregate.list_items, req.user.user_id);
         await groceryListController.deleteGeneratedListItems(list.meals);
         let customItems = await groceryListController.fetchCustomListItems(list, req.user.user_id);
 

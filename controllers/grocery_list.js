@@ -106,7 +106,7 @@ module.exports = {
     return {meals: meals, list_items: listItems};
   },
   
-  consolidateListItems: (listItems, userId) => {
+  consolidateListItems: (meals, listItems, userId) => {
     let items = [];
     let itemNames = [];
   
@@ -133,7 +133,29 @@ module.exports = {
                 itemName = itemB.name;
               }
             }
-  
+
+            if (itemNames.includes(itemName)) {
+              let i = itemNames.indexOf(itemName);
+              let tempItem = items[i];
+              if (unitsHelper[tempItem.unit] != null && unitsHelper[tempItem.unit]) {
+                item.quantity = convert(item.quantity).from(unitsHelper[item.unit]).to(unitsHelper[tempItem.unit]);
+                item.unit = tempItem.unit;
+                item = combineListItems(tempItem, item, userId);
+                items[i] = item;
+              } else {
+                items.push(item);
+                itemNames.push(itemName);
+              }
+            } else {
+              items.push(item);
+              itemNames.push(itemName);
+            }
+
+          }
+          else if ((itemA.name != itemB.name) && meals.length == 1) {
+            item = itemB;
+            itemName = item.name;
+            
             if (itemNames.includes(itemName)) {
               let i = itemNames.indexOf(itemName);
               let tempItem = items[i];
@@ -151,6 +173,7 @@ module.exports = {
               itemNames.push(itemName);
             }
           }
+
         }
       });
     });
