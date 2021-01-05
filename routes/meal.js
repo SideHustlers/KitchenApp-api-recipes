@@ -47,7 +47,6 @@ router.post('/create',
 );
 
 // Allows for the edit of a meal's tags, name, 
-// total_calories, total_time, and total_time_units
 router.put('/:id/edit',
   authMiddleware.verifyAccessToken(true),
   mealMiddleware.checkMealExists,

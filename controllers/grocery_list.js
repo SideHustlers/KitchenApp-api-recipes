@@ -225,9 +225,9 @@ module.exports = {
   },
 
   generateGroceryListName: (startDate, endDate) => {
-    let start = DateTime.fromJSDate(startDate).plus({days: 1}).toFormat('MMM dd');
-    let end = DateTime.fromJSDate(endDate).plus({days: 1}).toFormat('MMM dd');
+    let start = DateTime.fromJSDate(startDate).toFormat('MMM dd');
+    let end = DateTime.fromJSDate(endDate).toFormat('MMM dd');
     let name = start + ' - ' + end;
-    return name
+    return name;
   }
 }
