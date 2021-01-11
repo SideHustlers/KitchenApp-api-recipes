@@ -8,7 +8,7 @@ const recipeRoutes = require('./recipe');
 const mealRoutes = require('./meal');
 const groceryListRoutes = require('./grocery_list');
 
-const allowedOrigins = ['http://localhost:3000'];
+const allowedOrigins = ['http://localhost:3000', 'http://localhost:8000'];
 
 router.use(cors({
   credentials: true,

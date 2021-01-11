@@ -14,7 +14,8 @@ const mealMiddleware = {
 
 const typeDefs = `
   extend type Query {
-    meals: [Meal] 
+    meals: [Meal]
+    meal(id: String!): Meal 
   }
   type Meal {
   meal_id: String!,
@@ -50,6 +51,27 @@ const resolvers = {
         throw new ApolloError("Something went wrong, please try again", "BAD REQUEST");
       }
     },
+    meal: async (part, args, context, info) => {
+      try {
+        if (context.user === 'anonymous') {
+          throw new ApolloError("Login Required", "UNAUTHORIZED");
+        } else {
+          let meal = await mongoose.model('meals').findOne({
+            meal_id: args.id,
+            created_by: context.user.user_id,
+          }).populate({
+            path: 'recipes',
+            populate: { 
+              path: 'ingredients media steps nutrition'
+            }
+          }).exec();
+          return meal;
+        }
+      } catch (error) {
+        console.log(error);
+        throw new ApolloError("Something went wrong, please try again", "BAD REQUEST");
+      }
+    }
   }
 };
 

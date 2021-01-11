@@ -47,7 +47,6 @@ router.post('/create',
 );
 
 // Allows for the edit of a meal's tags, name, 
-// total_calories, total_time, and total_time_units
 router.put('/:id/edit',
   authMiddleware.verifyAccessToken(true),
   mealMiddleware.checkMealExists,
@@ -110,7 +109,7 @@ router.put('/:id/move',
       let list = await groceryListController.findAndRemoveMealFromGroceryList(meal);
       if (list != null) {
         let aggregate = await groceryListController.aggregateGroceryListItems(list, req.user.user_id);
-        let listItems = groceryListController.consolidateListItems(aggregate.list_items, req.user.user_id);
+        let listItems = groceryListController.consolidateListItems(aggregate.meals, aggregate.list_items, req.user.user_id);
         await groceryListController.deleteGeneratedListItems(list.meals);
         let customItems = await groceryListController.fetchCustomListItems(list, req.user.userId);
         
@@ -145,8 +144,6 @@ router.put('/:id/move',
       ).populate('items');
 
       if (groceryLists.length > 0) {
-        console.log('Lists', groceryLists.length);
-        console.log('Items', groceryLists[0].items.length);
   
         await Promise.all(groceryLists.map(async gList => {
           let listMeals = gList.meals;
@@ -159,9 +156,9 @@ router.put('/:id/move',
             {new: true}
           );
           let listAggregate = await groceryListController.aggregateGroceryListItems(groceryList, req.user.user_id);
-          let groceryListItems = groceryListController.consolidateListItems(listAggregate.list_items, req.user.user_id);
-          await deleteGeneratedListItems(groceryList, req.user.user_id);
-          let groceryCustomItems = await fetchCustomListItems(groceryList, req.user.user_id);
+          let groceryListItems = groceryListController.consolidateListItems(aggregate.meals, listAggregate.list_items, req.user.user_id);
+          await groceryListController.deleteGeneratedListItems(groceryList, req.user.user_id);
+          let groceryCustomItems = await groceryListController.fetchCustomListItems(groceryList, req.user.user_id);
   
           let groceryItems = [];
           await Promise.all(groceryListItems.map(async gListItem => {
@@ -193,7 +190,6 @@ router.put('/:id/move',
   }
 );
 
-// TODO: Decide on delete logic for a meal
 router.delete('/:id/delete',
   authMiddleware.verifyAccessToken(true),
   mealMiddleware.checkMealExists,
@@ -203,7 +199,7 @@ router.delete('/:id/delete',
       let list = await groceryListController.findAndRemoveMealFromGroceryList(req.meal);
       if (list != null) {
         let aggregate = await groceryListController.aggregateGroceryListItems(list, req.user.user_id);
-        let listItems = groceryListController.consolidateListItems(aggregate.list_items, req.user.user_id);
+        let listItems = groceryListController.consolidateListItems(aggregate.meals, aggregate.list_items, req.user.user_id);
         await groceryListController.deleteGeneratedListItems(list.meals);
         let customItems = await groceryListController.fetchCustomListItems(list, req.user.user_id);
 

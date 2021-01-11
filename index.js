@@ -39,6 +39,7 @@ const apolloServer = new ApolloServer({
 apolloServer.applyMiddleware({ app, path: '/graphql' });
 
 app.use(function(err, req, res, next){
+  console.log(err)
   console.log(err.name, process.env.NODE_ENV);
   if(err.name === "ValidationError" && process.env.NODE_ENV === "production") {
       var new_err = {
