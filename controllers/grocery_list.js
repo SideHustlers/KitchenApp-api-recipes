@@ -106,7 +106,9 @@ module.exports = {
     return {meals: meals, list_items: listItems};
   },
   
-  consolidateListItems: (meals, listItems, userId) => {
+  // TODO: Remove this method, if all the below method is verified
+  // ! Deprecated
+  consolidateListItemsOld: (meals, listItems, userId) => {
     let items = [];
     let itemNames = [];
   
@@ -176,6 +178,31 @@ module.exports = {
 
         }
       });
+    });
+
+    return items;
+  },
+
+  // TODO: Verify that this functions correctly across use cases
+  // TODO: Remove 'meals' from the formal parameters
+  consolidateListItems: (meals, listItems, userId) => {
+    let items = [];
+    let itemNames = [];
+
+    listItems.map(listItem => {
+      if (itemNames.includes(listItem.name)) {
+        let i = itemNames.indexOf(listItem.name);
+        let item = items[i];
+        if (unitsHelper[item.unit] != null && unitsHelper[listItem.unit] != null) {
+          listItem.quantity = convert(listItem.quantity).from(unitsHelper[listItem.unit]).to(unitsHelper[item.unit]);
+          listItem.unit = item.unit;
+        }
+        listItem = combineListItems(item, listItem, userId);
+        items[i] = listItem;
+      } else {
+        items.push(listItem);
+        itemNames.push(listItem.name);
+      }
     });
 
     return items;
