@@ -68,7 +68,7 @@ router.post('/generate',
       
       let aggregate = await groceryListController.aggregateGroceryListItemsByDate(req.body.start_date, req.body.end_date, req.user.user_id);
 
-      let listItems = groceryListController.consolidateListItems( aggregate.meals, aggregate.list_items, req.user.user_id);
+      let listItems = groceryListController.consolidateListItems(aggregate.list_items, req.user.user_id);
 
       let items = [];
       await Promise.all(listItems.map(async listItem => {
@@ -110,7 +110,7 @@ router.put('/:list_id/update',
 
       let aggregate = await groceryListController.aggregateGroceryListItemsByDate(req.body.start_date, req.body.end_date, req.user.user_id);
       
-      let listItems = await groceryListController.consolidateListItems(aggregate.meals, aggregate.list_items, req.user.user_id);
+      let listItems = await groceryListController.consolidateListItems(aggregate.list_items, req.user.user_id);
 
       let list = await mongoose.model('grocerylists').findOne({grocery_list_id: req.params.list_id});
       await mongoose.model('listitems').deleteMany(

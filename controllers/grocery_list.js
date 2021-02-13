@@ -105,77 +105,25 @@ module.exports = {
 
     return {meals: meals, list_items: listItems};
   },
-  
-  consolidateListItems: (meals, listItems, userId) => {
+
+  consolidateListItems: (listItems, userId) => {
     let items = [];
     let itemNames = [];
-  
-    listItems.map(itemA => {
-      listItems.map(itemB => {
-        let item = null;
-        let itemName = null;
-        if (itemA != itemB && !itemNames.includes(itemB.name)) {
-          if (itemA.name === itemB.name) {
-            if (itemA.unit === itemB.unit) {
-              item = combineListItems(itemA, itemB, userId);
-              itemName = item.name;
-            }
-            else {
-              if (unitsHelper[itemA.unit] && unitsHelper[itemB.unit]) {
-                // TODO: Make more robust, for better unit conversion
-                let cQuantity = convert(itemA.quantity).from(unitsHelper[itemA.unit]).to(unitsHelper[itemB.unit]);
-                itemA.unit = itemB.unit;
-                itemA.quantity = cQuantity;
-                item = combineListItems(itemA, itemB, userId);
-                itemName = item.name;
-              } else {
-                item = itemB;
-                itemName = itemB.name;
-              }
-            }
 
-            if (itemNames.includes(itemName)) {
-              let i = itemNames.indexOf(itemName);
-              let tempItem = items[i];
-              if (unitsHelper[tempItem.unit] != null && unitsHelper[tempItem.unit]) {
-                item.quantity = convert(item.quantity).from(unitsHelper[item.unit]).to(unitsHelper[tempItem.unit]);
-                item.unit = tempItem.unit;
-                item = combineListItems(tempItem, item, userId);
-                items[i] = item;
-              } else {
-                items.push(item);
-                itemNames.push(itemName);
-              }
-            } else {
-              items.push(item);
-              itemNames.push(itemName);
-            }
-
-          }
-          else if ((itemA.name != itemB.name) && meals.length == 1) {
-            item = itemB;
-            itemName = item.name;
-            
-            if (itemNames.includes(itemName)) {
-              let i = itemNames.indexOf(itemName);
-              let tempItem = items[i];
-              if (unitsHelper[tempItem.unit] != null && unitsHelper[tempItem.unit]) {
-                item.quantity = convert(item.quantity).from(unitsHelper[item.unit]).to(unitsHelper[tempItem.unit]);
-                item.unit = tempItem.unit;
-                item = combineListItems(tempItem, item, userId);
-                items[i] = item;
-              } else {
-                items.push(item);
-                itemNames.push(itemName);
-              }
-            } else {
-              items.push(item);
-              itemNames.push(itemName);
-            }
-          }
-
+    listItems.map(listItem => {
+      if (itemNames.includes(listItem.name)) {
+        let i = itemNames.indexOf(listItem.name);
+        let item = items[i];
+        if (unitsHelper[item.unit] != null && unitsHelper[listItem.unit] != null) {
+          listItem.quantity = convert(listItem.quantity).from(unitsHelper[listItem.unit]).to(unitsHelper[item.unit]);
+          listItem.unit = item.unit;
         }
-      });
+        listItem = combineListItems(item, listItem, userId);
+        items[i] = listItem;
+      } else {
+        items.push(listItem);
+        itemNames.push(listItem.name);
+      }
     });
 
     return items;
